@@ -43,7 +43,7 @@ var sandboxSecret = 'mrxt8iFjtskHbfaXuRCXVpG7PHG';
 
 function decideTrade(coin){
     console.log('deciding trade')
-    if((candles[currentCandle].low > candles[currentCandle - 1].high) && !tradeData.buyIn.active){
+    if((candles[currentCandle].average > candles[currentCandle - 1].high) && !tradeData.buyIn.active){
         console.log('## BUY ##');
         try{
             var options = {
@@ -83,7 +83,7 @@ function decideTrade(coin){
                 buildCandle(coin);
             }, 1500)
         }
-    } else if((candles[currentCandle].high < candles[currentCandle - 1].low) && tradeData.active == true){
+    } else if((candles[currentCandle].high < candles[currentCandle - 1].average) && tradeData.active == true){
         console.log('## SELL ##');
         try{
             var options = {
@@ -141,6 +141,7 @@ function buildCandle(coin){
             id: currentCandle,
             high: 0,
             low: 0,
+            average: 0,
             prices: []
         }
     }
@@ -193,6 +194,12 @@ function buildCandle(coin){
                         priceCount++;;
 
                         if(priceCount == pricesPerCandle){
+                            var totalPriceForAverage = 0;
+                            candleData.prices.forEach(function(candlePrice){
+                                totalPriceForAverage += candlePrice;
+                            })
+                            candleData.average = totalPriceForAverage / candleData.prices.length;
+
                             if(candles.length > 2){
                                 decideTrade(coin);
                                 priceCount = 0;
