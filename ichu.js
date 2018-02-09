@@ -61,7 +61,7 @@ function decideTrade(coin){
             if(tradeData.buyIn.triggerPrice == 0){
                 tradeData.buyIn.triggerPrice = tickerData[coin].price;
             } else {
-                if((1 - (tradeData.buyIn.triggerPrice / tickerData[coin].price)) > 0.005){
+                if((1 - (tradeData.buyIn.triggerPrice / tickerData[coin].price)) > 0.001){
                     console.log('Buy ' + coin + ' at ' + tickerData[coin].price)
                     tradeData.buyIn.price = tickerData[coin].price;
                     tradeData.buyIn.active = true;
@@ -72,7 +72,7 @@ function decideTrade(coin){
         }
     } else if(tickerData[coin].ichu.signal == 'sell'){
         if(tradeData.buyIn.active){
-            if((1 - (tradeData.buyIn.trailingSell / tickerData[coin].price)) < -0.005){
+            if((1 - (tradeData.buyIn.trailingSell / tickerData[coin].price)) < -0.01){
                 console.log('Sell ' + coin + ' at ' + tickerData[coin].price)
                 tradeData.buyIn.trailingSell = 0;
                 tradeData.buyIn.price = 0
@@ -191,7 +191,7 @@ function getPrice(coin){
 
 setInterval(function(){
     getPrice('btc');
-}, 1500)
+}, 30000)
 
 getPrice('btc');
 
