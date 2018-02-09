@@ -6,7 +6,7 @@ var candles = [];
 var candleCount = 0;
 var currentCandle = 0;
 var priceCount = 0;
-var pricesPerCandle = 600;
+var pricesPerCandle = 120;
 var tradeData = {
     buyIn: {
         price: 0,
@@ -161,9 +161,11 @@ function buildCandle(coin){
             if(response){
                 if(response.statusCode){
                     if (!error && response.statusCode == 200) {
+                        process.stdout.write('\033c');
+
                         var priceData = JSON.parse(body);
 
-                        //candleData.prices.push(priceData.last);
+                        candleData.prices.push(priceData.last);
                         
                         if((priceData.last > candleData.high) || candleData.high == 0){
                             candleData.high = priceData.last;
@@ -172,12 +174,20 @@ function buildCandle(coin){
                             candleData.low = priceData.last;
                         }
 
+                        var totalPriceForAverage = 0;
+                        candleData.prices.forEach(function(candlePrice){
+                            totalPriceForAverage += parseFloat(candlePrice);
+                        })
+                        candleData.average = totalPriceForAverage / candleData.prices.length;
+
                         candles[currentCandle] = candleData;
 
-                        process.stdout.write('\033c');
                         stats = [];
                         stats.push('Price Count: ' + priceCount);
                         stats.push('Current Candle: ' + currentCandle);
+                        stats.push('Current Candle High: ' + candleData.high);
+                        stats.push('Current Candle Low: ' + candleData.low);
+                        stats.push('Current Candle Average: ' + candleData.average);
                         stats.push('==================================');
                         stats.push('USD Funds: $' + tradeData.funds);
                         stats.push(coin + ' Funds: ' + tradeData[coin].funds + ' (USD Approx: $' + ((priceData.last * tradeData[coin].funds) - ((priceData.last * tradeData[coin].funds) * 0.005)) + ')');
@@ -194,12 +204,6 @@ function buildCandle(coin){
                         priceCount++;;
 
                         if(priceCount == pricesPerCandle){
-                            var totalPriceForAverage = 0;
-                            candleData.prices.forEach(function(candlePrice){
-                                totalPriceForAverage += candlePrice;
-                            })
-                            candleData.average = totalPriceForAverage / candleData.prices.length;
-
                             if(candles.length > 2){
                                 decideTrade(coin);
                                 priceCount = 0;
