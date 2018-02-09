@@ -83,7 +83,7 @@ function decideTrade(coin){
                 buildCandle(coin);
             }, 1500)
         }
-    } else if((candles[currentCandle].high < candles[currentCandle - 1].average) && tradeData.active == true){
+    } else if((candles[currentCandle].high < candles[currentCandle - 1].average) && tradeData.buyIn.active == true){
         console.log('## SELL ##');
         try{
             var options = {
@@ -102,10 +102,10 @@ function decideTrade(coin){
                         if (!error && response.statusCode == 200) {
                             var priceData = JSON.parse(body);
 
+                            tradeData.funds = (priceData.last * tradeData[coin].funds) - ((priceData.last * tradeData[coin].funds) * 0.005);
                             tradeData.buyIn.active = false;
                             tradeData.buyIn.price = 0;
                             tradeData[coin].funds = 0;
-                            tradeData.funds = (priceData.last * tradeData[coin].funds) - ((priceData.last * tradeData[coin].funds) * 0.005);
                         } else {
                             console.log('Response: ' + JSON.stringify(response))
                             console.log('Status code: ' + response.statusCode)
@@ -185,9 +185,16 @@ function buildCandle(coin){
                         stats = [];
                         stats.push('Price Count: ' + priceCount);
                         stats.push('Current Candle: ' + currentCandle);
+                        stats.push('==================================');
                         stats.push('Current Candle High: ' + candleData.high);
                         stats.push('Current Candle Low: ' + candleData.low);
                         stats.push('Current Candle Average: ' + candleData.average);
+                        if(candles.length >= 2){
+                            stats.push('==================================');
+                            stats.push('Previous Candle High: ' + candles[currentCandle - 1].high);
+                            stats.push('Previous Candle Low: ' + candles[currentCandle - 1].low);
+                            stats.push('Previous Candle Average: ' + candles[currentCandle - 1].average);
+                        }
                         stats.push('==================================');
                         stats.push('USD Funds: $' + tradeData.funds);
                         stats.push(coin + ' Funds: ' + tradeData[coin].funds + ' (USD Approx: $' + ((priceData.last * tradeData[coin].funds) - ((priceData.last * tradeData[coin].funds) * 0.005)) + ')');
@@ -204,7 +211,7 @@ function buildCandle(coin){
                         priceCount++;;
 
                         if(priceCount == pricesPerCandle){
-                            if(candles.length > 2){
+                            if(candles.length >= 2){
                                 decideTrade(coin);
                                 priceCount = 0;
                                 currentCandle++;
@@ -235,14 +242,6 @@ function buildCandle(coin){
 }
 
 function startCandles(coin){
-    // setInterval(function(){
-    //     if(candles.length > 2){
-    //         decideTrade(coin);
-    //     }
-    //     currentCandle++;
-    //     buildCandle(coin);
-    // }, 10000);
-
     buildCandle(coin);
 }
 
